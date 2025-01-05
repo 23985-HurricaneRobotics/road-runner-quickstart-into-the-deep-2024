@@ -49,7 +49,7 @@ public class mainCodeV1 extends LinearOpMode {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         arm = hardwareMap.get(DcMotor.class, "arm");
         colorDetector = hardwareMap.get(ColorSensor.class, "colorDetector");
-        clawUpDown = hardwareMap.get(Servo.class, "servoUpDown"); //add a servo onto the robot just to make sure this works (idk if this will error without one)
+        clawUpDown = hardwareMap.get(Servo.class, "clawServo"); //add a servo onto the robot just to make sure this works (idk if this will error without one)
         verticalExtender = hardwareMap.get(DcMotor.class, "verticalExtender");
         bucketServo = hardwareMap.get(Servo.class, "bucketServo");
     }
@@ -158,7 +158,7 @@ public class mainCodeV1 extends LinearOpMode {
         arm.setTargetPosition(armPosition);
     }
 
-    private void verticalExtension(){
+    private void verticalExtension() {
         if (gamepad1.x) {
             if (!xPressed) {
                 xPressed = true;

@@ -158,19 +158,19 @@ public class mainCodeV1 extends LinearOpMode {
         arm.setTargetPosition(armPosition);
     }
 
-    private void verticalExtension() {
-        if (gamepad1.x) {
+    private void verticalExtension(boolean switchVerticalPosition) {
+        if (switchVerticalPosition) {
             if (!xPressed) {
                 xPressed = true;
                 verticalExtensionDirection = !verticalExtensionDirection;
+                if (verticalExtensionDirection) { //true = up
+                    verticalExtender.setTargetPosition(100);
+                } if (!verticalExtensionDirection) { //false = down
+                    verticalExtender.setTargetPosition(0);
+                }
             }
         } else {
             xPressed = false;
-        }
-        if (verticalExtensionDirection) {
-            verticalExtender.setTargetPosition(100);
-        } else {
-            verticalExtender.setTargetPosition(0);
         }
     }
 
@@ -293,7 +293,7 @@ public class mainCodeV1 extends LinearOpMode {
 
             armMovement(gamepad1.dpad_down,gamepad1.dpad_up,INCREMENT);
             //bucketMovement();
-            verticalExtension();
+            verticalExtension(gamepad1.x); //gamepad1.x is assigned switchVerticalPosition where if that is true, we are switching whether the extender goes up or down, true is up and false is down
             printThings();
         }
     }

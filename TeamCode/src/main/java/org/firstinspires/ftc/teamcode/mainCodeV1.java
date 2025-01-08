@@ -29,6 +29,8 @@ public class mainCodeV1 extends LinearOpMode {
     private Servo bucketServo;
     int ARMMIN;
     int ARMMAX;
+    int EXTENDERMIN;
+    int EXTENDERMAX;
     int targetedAngle = 1; //for block search
     double searchOrigin; //for block search
     int INCREMENT;
@@ -63,7 +65,10 @@ public class mainCodeV1 extends LinearOpMode {
 
     private void extenderSetup() {
         verticalExtender.setPower(1);
+        EXTENDERMIN = verticalExtender.getCurrentPosition();
+        EXTENDERMAX = EXTENDERMIN - 3500;
     }
+
     private void setupServos() {
         bucketServo.setPosition(0.5);
         clawUpDown.setPosition(0.5);
@@ -80,12 +85,16 @@ public class mainCodeV1 extends LinearOpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        verticalExtender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         clawUpDown.setPosition(clawYPos);
@@ -159,19 +168,23 @@ public class mainCodeV1 extends LinearOpMode {
     }
 
     private void verticalExtension(boolean switchVerticalPosition) {
+
         if (switchVerticalPosition) {
             if (!xPressed) {
                 xPressed = true;
                 verticalExtensionDirection = !verticalExtensionDirection;
                 if (verticalExtensionDirection) { //true = up
-                    verticalExtender.setTargetPosition(100);
+                    verticalExtender.setTargetPosition(EXTENDERMAX);
                 } if (!verticalExtensionDirection) { //false = down
-                    verticalExtender.setTargetPosition(0);
+                    verticalExtender.setTargetPosition(EXTENDERMIN);
                 }
             }
         } else {
             xPressed = false;
         }
+
+
+
     }
 
     private void bucketMovement(boolean down,boolean up, int increment) {
@@ -194,6 +207,7 @@ public class mainCodeV1 extends LinearOpMode {
         telemetry.addData("armPosition", arm.getCurrentPosition());
         telemetry.addData("armMax", ARMMAX);
         telemetry.addData("claw angle: ", clawUpDown.getPosition());
+        telemetry.addData("VerticalExtenderFromPrintFunc:", verticalExtender.getCurrentPosition());
         telemetry.update();
     }
 

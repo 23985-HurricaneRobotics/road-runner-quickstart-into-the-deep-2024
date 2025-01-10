@@ -23,7 +23,7 @@ public class mainCodeV1 extends LinearOpMode {
     private DcMotor arm;
     private DcMotor verticalExtender;
     private ColorSensor colorDetector;
-    private Servo clawUpDown;
+    private Servo clawServo;
     boolean verticalExtensionDirection = true;
     boolean xPressed = false;
     private Servo bucketServo;
@@ -34,7 +34,7 @@ public class mainCodeV1 extends LinearOpMode {
     int targetedAngle = 1; //for block search
     double searchOrigin; //for block search
     int INCREMENT;
-    int SERVOINCREMENT;
+    double SERVOINCREMENT = 0.05;
     //all servo positioning stuff is from 0 - 1 (decimals included) and not in radians / degrees for some reason, 0 is 0 degrees, 1 is 320 (or whatever the servo max is) degrees
     //all our servos have 320 degrees of movement so i limited it so it wont collide with the arm too much
     private double clawMax = 1; //maximum angle the claw servo is allowed to move
@@ -51,7 +51,7 @@ public class mainCodeV1 extends LinearOpMode {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         arm = hardwareMap.get(DcMotor.class, "arm");
         colorDetector = hardwareMap.get(ColorSensor.class, "colorDetector");
-        clawUpDown = hardwareMap.get(Servo.class, "clawServo"); //add a servo onto the robot just to make sure this works (idk if this will error without one)
+        clawServo = hardwareMap.get(Servo.class, "clawServo"); //add a servo onto the robot just to make sure this works (idk if this will error without one)
         verticalExtender = hardwareMap.get(DcMotor.class, "verticalExtender");
         bucketServo = hardwareMap.get(Servo.class, "bucketServo");
     }
@@ -66,12 +66,12 @@ public class mainCodeV1 extends LinearOpMode {
     private void extenderSetup() {
         verticalExtender.setPower(1);
         EXTENDERMIN = verticalExtender.getCurrentPosition();
-        EXTENDERMAX = EXTENDERMIN - 3500;
+        EXTENDERMAX = EXTENDERMIN - 4000;
     }
 
     private void setupServos() {
         bucketServo.setPosition(0.5);
-        clawUpDown.setPosition(0.5);
+        clawServo.setPosition(0.5);
     }
 
     private void setupChassis() {
@@ -97,7 +97,7 @@ public class mainCodeV1 extends LinearOpMode {
         verticalExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        clawUpDown.setPosition(clawYPos);
+        clawServo.setPosition(clawYPos);
     }
 
     private void initializeAndSetUp() {
@@ -153,7 +153,7 @@ public class mainCodeV1 extends LinearOpMode {
         backLeft.setPower(0.75 * backLeftPower);
         frontRight.setPower(0.75 * frontRightPower);
         backRight.setPower(0.75 * backRightPower);
-        clawUpDown.setPosition(clawYPos); //set servo position
+        clawServo.setPosition(clawYPos); //set servo position
     }
 
     private void armMovement(boolean down, boolean up, int increment) {
@@ -182,12 +182,9 @@ public class mainCodeV1 extends LinearOpMode {
         } else {
             xPressed = false;
         }
-
-
-
     }
 
-    private void bucketMovement(boolean down,boolean up, int increment) {
+    private void bucketMovement(boolean down, boolean up, double increment) {
         int max = 1;
         int min = 0;
         double bucketPosition = bucketServo.getPosition();
@@ -206,7 +203,8 @@ public class mainCodeV1 extends LinearOpMode {
         telemetry.addData("Heading: ", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         telemetry.addData("armPosition", arm.getCurrentPosition());
         telemetry.addData("armMax", ARMMAX);
-        telemetry.addData("claw angle: ", clawUpDown.getPosition());
+        telemetry.addData("claw angle: ", clawServo.getPosition());
+        telemetry.addData("bucket postion:", bucketServo.getPosition());
         telemetry.addData("VerticalExtenderFromPrintFunc:", verticalExtender.getCurrentPosition());
         telemetry.update();
     }
@@ -306,7 +304,7 @@ public class mainCodeV1 extends LinearOpMode {
             }
 
             armMovement(gamepad1.dpad_down,gamepad1.dpad_up,INCREMENT);
-            //bucketMovement();
+            bucketMovement(gamepad1.left_bumper, gamepad1.right_bumper, SERVOINCREMENT);
             verticalExtension(gamepad1.x); //gamepad1.x is assigned switchVerticalPosition where if that is true, we are switching whether the extender goes up or down, true is up and false is down
             printThings();
         }

@@ -26,6 +26,8 @@ public class mainCodeV1 extends LinearOpMode {
     private Servo clawServo;
     boolean verticalExtensionDirection = true;
     boolean xPressed = false;
+
+
     private Servo bucketServo;
     int ARMMIN;
     int ARMMAX;
@@ -34,7 +36,7 @@ public class mainCodeV1 extends LinearOpMode {
     int targetedAngle = 1; //for block search
     double searchOrigin; //for block search
     int INCREMENT;
-    double SERVOINCREMENT = 0.05;
+    double SERVOINCREMENT = 0.03;
     //all servo positioning stuff is from 0 - 1 (decimals included) and not in radians / degrees for some reason, 0 is 0 degrees, 1 is 320 (or whatever the servo max is) degrees
     //all our servos have 320 degrees of movement so i limited it so it wont collide with the arm too much
     private double servoMax = 1; //maximum angle the claw servo is allowed to move
@@ -43,6 +45,7 @@ public class mainCodeV1 extends LinearOpMode {
     private double clawYPos = 0.5; //uses this value to set the initial claw position in the middle of the max and min
     //i am using a variable because .getPosition() only returns the last position the servo was told to move, not its actual location\
 
+    boolean isDoingDrop = false;
 
     private void hardwareMapping() {
         imu = hardwareMap.get(IMU.class, "imu");
@@ -180,28 +183,32 @@ public class mainCodeV1 extends LinearOpMode {
     }
 
     private void bucketMovement(boolean down, boolean up, double increment) {
-        int max = 1;
-        int min = 0;
-        double bucketPosition = bucketServo.getPosition();
-        if (down) {
-            bucketPosition -= increment;
-        } else if (up) {
-            bucketPosition += increment;
+        if (!isDoingDrop) {
+            int max = 1;
+            int min = 0;
+            double bucketPosition = bucketServo.getPosition();
+            if (down) {
+                bucketPosition -= increment;
+            } else if (up) {
+                bucketPosition += increment;
+            }
+            bucketPosition = clamp(bucketPosition, min, max);  //clamp the values to be between min and max
+            bucketServo.setPosition(bucketPosition);
         }
-        bucketPosition = clamp(bucketPosition, min, max);  //clamp the values to be between min and max
-        bucketServo.setPosition(bucketPosition);
     }
 
 
     private void clawMovement(boolean down, boolean up, double increment) {
-        double clawPos = clawServo.getPosition();
-        if (down) {
-            clawPos -= increment;
-        } else if (up) {
-            clawPos += increment;
+        if (!isDoingDrop) {
+            double clawPos = clawServo.getPosition();
+            if (down) {
+                clawPos -= increment;
+            } else if (up) {
+                clawPos += increment;
+            }
+            clawPos = clamp(clawPos, servoMin, servoMax);  //clamp the values to be between min and max
+            clawServo.setPosition(clawPos);
         }
-        clawPos = clamp(clawPos, servoMin, servoMax);  //clamp the values to be between min and max
-        clawServo.setPosition(clawPos);
     }
 
     private void printThings() {
@@ -314,6 +321,7 @@ public class mainCodeV1 extends LinearOpMode {
             bucketMovement(gamepad1.left_bumper, gamepad1.right_bumper, SERVOINCREMENT);
             clawMovement(gamepad1.dpad_left, gamepad1.dpad_right, SERVOINCREMENT);
             verticalExtension(gamepad1.x); //gamepad1.x is assigned switchVerticalPosition where if that is true, we are switching whether the extender goes up or down, true is up and false is down
+
             printThings();
         }
     }

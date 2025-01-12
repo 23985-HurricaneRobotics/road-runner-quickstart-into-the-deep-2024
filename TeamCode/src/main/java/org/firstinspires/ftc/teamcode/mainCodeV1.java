@@ -37,11 +37,12 @@ public class mainCodeV1 extends LinearOpMode {
     double SERVOINCREMENT = 0.05;
     //all servo positioning stuff is from 0 - 1 (decimals included) and not in radians / degrees for some reason, 0 is 0 degrees, 1 is 320 (or whatever the servo max is) degrees
     //all our servos have 320 degrees of movement so i limited it so it wont collide with the arm too much
-    private double clawMax = 1; //maximum angle the claw servo is allowed to move
-    private double clawMin = 0; //minimum angle the claw servo is allowed to move
-    private double clawIncrement = 0.05; //how much the claw angle increases / decreases every time the buttons are down
-    private double clawYPos = (clawMax + clawMin) / 2; //uses this value to set the initial claw position in the middle of the max and min
-    //i am using a variable because .getPosition() only returns the last position the servo was told to move, not its actual location
+    private double servoMax = 1; //maximum angle the claw servo is allowed to move
+    private double servoMin = 0; //minimum angle the claw servo is allowed to move
+     
+    private double clawYPos = 0.5; //uses this value to set the initial claw position in the middle of the max and min
+    //i am using a variable because .getPosition() only returns the last position the servo was told to move, not its actual location\
+
 
     private void hardwareMapping() {
         imu = hardwareMap.get(IMU.class, "imu");
@@ -141,13 +142,7 @@ public class mainCodeV1 extends LinearOpMode {
         frontRightPower = (rotY - (rotX + t)) / denominator;
         backRightPower = (rotY + (rotX - t)) / denominator;
 
-        if (gamepad1.dpad_left && !gamepad1.dpad_right) {
-            //claw down
-            clawYPos = clamp(clawYPos - clawIncrement, clawMin, clawMax);
-        }else if (gamepad1.dpad_right && !gamepad1.dpad_left){
-            //claw up
-            clawYPos = clamp(clawYPos + clawIncrement, clawMin, clawMax);
-        }
+
 
         frontLeft.setPower(0.75 * frontLeftPower);
         backLeft.setPower(0.75 * backLeftPower);
@@ -195,6 +190,18 @@ public class mainCodeV1 extends LinearOpMode {
         }
         bucketPosition = clamp(bucketPosition, min, max);  //clamp the values to be between min and max
         bucketServo.setPosition(bucketPosition);
+    }
+
+
+    private void clawMovement(boolean down, boolean up, double increment) {
+        double clawPos = clawServo.getPosition();
+        if (down) {
+            clawPos -= increment;
+        } else if (up) {
+            clawPos += increment;
+        }
+        clawPos = clamp(clawPos, servoMin, servoMax);  //clamp the values to be between min and max
+        clawServo.setPosition(clawPos);
     }
 
     private void printThings() {
@@ -305,6 +312,7 @@ public class mainCodeV1 extends LinearOpMode {
 
             armMovement(gamepad1.dpad_down,gamepad1.dpad_up,INCREMENT);
             bucketMovement(gamepad1.left_bumper, gamepad1.right_bumper, SERVOINCREMENT);
+            clawMovement(gamepad1.dpad_left, gamepad1.dpad_right, SERVOINCREMENT);
             verticalExtension(gamepad1.x); //gamepad1.x is assigned switchVerticalPosition where if that is true, we are switching whether the extender goes up or down, true is up and false is down
             printThings();
         }

@@ -24,14 +24,7 @@ allprojects {
         maven { url 'https://maven.acmerobotics.com' }
         google()
     }
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile).tap {
-            configureEach {
-                options.fork = true
-                options.forkOptions.jvmArgs = ['-Dhttps.protocols=TLSv1.2']
-            }
-        }
-    }
+
 }
 
 repositories {
